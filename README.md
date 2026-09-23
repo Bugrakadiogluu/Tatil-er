@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/Express.js-Backend_API-lightgrey?style=for-the-badge&logo=express" alt="Express.js" />
   <img src="https://img.shields.io/badge/Three.js-3D_Globe-orange?style=for-the-badge&logo=three.js" alt="Three.js" />
   <img src="https://img.shields.io/badge/Supabase-PostgreSQL-teal?style=for-the-badge&logo=supabase" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Puppeteer-Stealth_Scraping-323330?style=for-the-badge&logo=puppeteer" alt="Puppeteer" />
   <img src="https://img.shields.io/badge/Docker-Compose_Ready-2496ED?style=for-the-badge&logo=docker" alt="Docker" />
 </p>
 
@@ -19,10 +20,10 @@
 ## 📖 İçindekiler
 - [🎯 Projenin Amacı & Ne İşe Yarar?](#-projenin-amacı--ne-işe-yarar)
 - [🌟 Temel Özellikler](#-temel-özellikler)
-- [📐 Sistem Mimarisi & Teknolojiler](#-sistem-mimarisi--teknolojiler)
+- [📐 Sistem Mimarisi & Modüller](#-sistem-mimarisi--modüller)
 - [⚖️ Gümrük & Tax-Free Mevzuat Motoru](#️-gümrük--tax-free-mevzuat-motoru)
 - [🚀 Hızlı Başlangıç & Kurulum](#-hızlı-başlangıç--kurulum)
-  - [Seçenek 1: Tek Tıkla Başlatma (.bat)](#seçenek-1-tek-tıkla-başlatma-bat-windows)
+  - [Seçenek 1: Tek Tıkla Başlatma (.bat - Windows)](#seçenek-1-tek-tıkla-başlatma-bat---windows)
   - [Seçenek 2: Docker Compose ile](#seçenek-2-docker-compose-ile)
   - [Seçenek 3: Manuel Geliştirici Kurulumu](#seçenek-3-manuel-geliştirici-kurulumu)
 - [🔑 Çevre Değişkenleri (.env Rehberi)](#-çevre-değişkenleri-env-rehberi)
@@ -83,50 +84,40 @@ Pek çok tüketici şu soruyu sormaktadır:
 
 ---
 
-## 📐 Sistem Mimarisi & Teknolojiler
+## 📐 Sistem Mimarisi & Modüller
 
 ```
-Holliday/
-├── database/
-│   ├── schema.sql              # Supabase PostgreSQL DDL (RLS, tablolar, indeksler)
-│   └── seed.sql                # 117 ürün, 33 mağaza, 20 ülke gümrük parametreleri
-├── backend/
+Tatil-er/
+├── API/                        # Global Price Aggregator & Scraper Motoru
 │   ├── src/
-│   │   ├── config/             # Ortam değişkenleri & gümrük varsayılanları (Temiz, secret içermez)
-│   │   ├── controllers/        # Express REST denetleyicileri
-│   │   ├── services/
-│   │   │   ├── airportService.ts       # 81 Türkiye havalimanı & IATA kodları
-│   │   │   ├── amadeusService.ts       # OAuth2 token caching uçuş servisi
-│   │   │   ├── arbitrageService.ts     # Ters arbitraj & sepet amortisman motoru
-│   │   │   ├── exchangeRateService.ts  # ECB/Frankfurter canlı kur servisi
-│   │   │   ├── googleFlightsService.ts # SerpApi Google Flights köprüsü
-│   │   │   ├── hotelService.ts         # Booking.com API köprüsü & Numbeo otel modelleri
-│   │   │   ├── livingCostService.ts    # Numbeo şehir yaşam maliyeti endeksleri
-│   │   │   ├── productService.ts       # Supabase ürün kataloğu
-│   │   │   └── taxCustomsService.ts    # 2025/2026 Gümrük, IMEI & Tax-Free motoru
-│   │   ├── middlewares/        # Rate limiter (IP bazlı 200 req/15 dk), Helmet, Error handler
-│   │   ├── routes/             # /api/v1/travel, /arbitrage, /products, /customs
-│   │   └── server.ts           # Express HTTP sunucu girişi (Port: 4000)
+│   │   ├── scrapers/           # Puppeteer-Stealth, Got-Scraping ve Cheerio adaptörleri (Amazon, Yodobashi vb.)
+│   │   ├── services/           # DB senkronizasyonu, ters arbitraj & katalog motoru
+│   │   ├── scheduler/          # Cron tabanlı periyodik fiyat güncelleme
+│   │   └── scripts/            # Seed ve canlı fiyat güncelleme betikleri
+│   ├── catalog_seed.sql        # Genişletilmiş çoklu ülke ürün verisi
+│   └── package.json
+├── backend/                    # Core REST API (Node.js & Express)
+│   ├── src/
+│   │   ├── controllers/        # Arbitraj, seyahat, gümrük ve ürün denetleyicileri
+│   │   ├── services/           # Amadeus, Google Flights, otel & gümrük servisleri
+│   │   ├── middlewares/        # IP rate limiter, CORS, hata yakalama
+│   │   ├── routes/             # REST API yönlendirmeleri (/api/v1/...)
+│   │   └── server.ts           # Port: 4000 Express sunucusu
 │   ├── Dockerfile
 │   └── package.json
-├── frontend/
+├── frontend/                   # Web İstemcisi (Next.js 14 App Router)
 │   ├── src/
-│   │   ├── app/                # Next.js 14 App Router (page.tsx, layout.tsx, globals.css)
-│   │   ├── components/
-│   │   │   ├── ArbitrageBasket.tsx       # Alışveriş sepeti & tatil amortisman çubuğu
-│   │   │   ├── CustomsInfoModal.tsx      # Gümrük ve Tax-Free yasal rehber modalı
-│   │   │   ├── FlightGlobeCanvas.tsx     # Three.js 3D interaktif dünya modeli
-│   │   │   ├── Header.tsx                # Canlı döviz ticker & lüks navigasyon
-│   │   │   ├── ProductCatalog.tsx        # Fiyat karşılaştırmalı ürün kataloğu
-│   │   │   ├── ReverseArbitrageFinder.tsx# "Tatili Bedavaya Getir" motoru
-│   │   │   ├── TravelCostSummary.tsx     # Bilet, otel ve harcama detay kartları
-│   │   │   └── TripPlanner.tsx           # Rota, 81 il havalimanı, tarih & konfor seçimi
-│   │   └── lib/                # API istemcisi ve TypeScript veri kontratları
+│   │   ├── app/                # Sayfa düzeni ve global stiller
+│   │   ├── components/         # Three.js 3D Küre, Bütçe Sihirbazı, Sepet & Modallar
+│   │   └── lib/                # API istemcisi ve TypeScript modelleri
 │   ├── Dockerfile
 │   └── package.json
-├── docker-compose.yml          # Postgres + Backend API + Frontend tek komut orkestrasyonu
-├── start-all.bat               # Windows çift tıkla başlatma betiği
-├── .env.example                # Örnek çevre değişkenleri
+├── database/                   # Veritabanı Şemaları & Tohum Veriler
+│   ├── schema.sql              # Supabase PostgreSQL DDL (RLS & Tablolar)
+│   └── seed.sql                # 117+ ürün, 33 mağaza, 20 ülke gümrük parametreleri
+├── docker-compose.yml          # Postgres + Backend + Frontend tek komut orkestrasyonu
+├── start-all.bat               # Windows tek tıkla başlatma betiği
+├── .env.example                # Örnek çevre değişkenleri şablonu
 └── README.md
 ```
 
@@ -172,8 +163,8 @@ Hiçbir paket kurmadan tek komutla PostgreSQL veritabanı, Backend ve Frontend'i
 
 ```bash
 # 1. Projeyi klonlayın
-git clone https://github.com/KULLANICI_ADINIZ/tatiler.git
-cd tatiler
+git clone https://github.com/Bugrakadiogluu/Tatil-er.git
+cd Tatil-er
 
 # 2. Docker Compose ile inşa edin ve başlatın
 docker compose up --build
@@ -218,6 +209,17 @@ cp .env.example .env.local
 npm run dev
 ```
 Tarayıcınızdan **[http://localhost:3000](http://localhost:3000)** adresine gidin.
+
+#### 3. (Opsiyonel) Canlı Fiyat Toplayıcı (API / Scraper):
+```bash
+cd API
+
+# Bağımlılıkları yükleyin
+npm install
+
+# Canlı fiyatları güncellemek veya test etmek için:
+npm run test:scrape
+```
 
 ---
 
@@ -271,32 +273,23 @@ Projenin güvenliğini sağlamak için hassas anahtarlar `.env` dosyalarında tu
 
 Bu proje, açık kaynak olarak GitHub'da güvenle paylaşılacak şekilde mimarilendirilmiştir. **Hiçbir kaynak kod dosyasında açık API Key veya veritabanı şifresi bulunmamaktadır.**
 
-### GitHub'a Güvenle Yükleme Adımları:
+### GitHub Deposu ile Senkronizasyon:
 
-1. **Git Deposu Başlatın:**
-   ```bash
-   cd Holliday
-   git init
-   ```
-
-2. **Gizli Dosyaların Engellendiğini Doğrulayın:**
+1. **Gizli Dosyaların Engellendiğini Doğrulayın:**
    ```bash
    git status
    ```
    > ⚠️ **DİKKAT:** Çıktıda `.env` veya `.env.local` dosyalarının **GÖRÜNMEDİĞİNDEN**, yalnızca `.env.example` dosyalarının göründüğünden emin olun. `.gitignore` yapılandırması bu dosyaları otomatik olarak engeller.
 
-3. **Dosyaları Sahneye Ekleyin ve İlk Commit'i Atın:**
+2. **Değişiklikleri Sahneye Ekleyin ve Commit Edin:**
    ```bash
    git add .
-   git commit -m "feat: initial commit - TATİL'ER cross-border arbitrage engine"
+   git commit -m "feat: update documentation and components"
    ```
 
-4. **GitHub Reposuna Gönderin:**
-   GitHub üzerinde yeni bir boş repo oluşturun (örn: `tatiler`), ardından:
+3. **GitHub Reposuna Gönderin:**
    ```bash
-   git branch -M main
-   git remote add origin https://github.com/KULLANICI_ADINIZ/tatiler.git
-   git push -u origin main
+   git push origin main
    ```
 
 ---
@@ -312,8 +305,7 @@ Bu proje, açık kaynak olarak GitHub'da güvenle paylaşılacak şekilde mimari
 Bu proje **MIT Lisansı** ile lisanslanmıştır. Dilediğiniz gibi kullanabilir, geliştirebilir ve kendi projelerinizde referans alabilirsiniz.
 
 ---
+
 <p align="center">
   Geliştirici: <b>Buğra Kadıoğlu</b> • <i>"Tatil Masraf Değil, Bir Fırsattır."</i>
 </p>
-#   T a t i l - e r  
- 
