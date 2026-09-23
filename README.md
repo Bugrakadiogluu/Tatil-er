@@ -50,7 +50,7 @@ Pek çok tüketici şu soruyu sormaktadır:
 
 ## 🌟 Temel Özellikler
 
-### 1. 🌍 Three.js ile 3D Geometrik Uçuş Küresi (Celestial Flight Globe)
+### 1. 🌍 Three.js ile 3D Geometrik Uçuş Küresi (Celestial Flight Globe):
 - Gerçek dünya koordinatları ve yüksek çözünürlüklü dokularla modellenmiş interaktif 3D küre.
 - Türkiye'nin 81 ilindeki sivil havalimanları ile 20 küresel destinasyon arasında animasyonlu parabolik uçuş yayları (Bezier curves).
 - 60 FPS akıcı etkileşim, otomatik atmosfer parıltısı ve tıklanabilir rota düğümleri.
