@@ -315,3 +315,5 @@ Bu proje **MIT Lisansı** ile lisanslanmıştır. Dilediğiniz gibi kullanabilir
 <p align="center">
   Geliştirici: <b>Buğra Kadıoğlu</b> • <i>"Tatil Masraf Değil, Bir Fırsattır."</i>
 </p>
+#   T a t i l - e r  
+ 

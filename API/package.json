@@ -1,0 +1,46 @@
+{
+  "name": "arbitrip-global-price-aggregator",
+  "version": "1.0.0",
+  "description": "Enterprise Global Price Aggregator API for Cross-Border Arbitrage across 130 countries",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "npx tsx src/index.ts",
+    "test:scrape": "npx tsx src/index.ts --test",
+    "arbitrage": "npx tsx src/index.ts --arbitrage",
+    "discover": "npx tsx src/index.ts --discover",
+    "seed:catalog": "npx tsx src/scripts/seedCatalog.ts",
+    "update:all": "npx tsx src/scripts/updatePrices.ts --all",
+    "update:top": "npx tsx src/scripts/updatePrices.ts --limit 15",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "arbitrage",
+    "scraper",
+    "price-aggregator",
+    "amazon-api",
+    "node-cron",
+    "puppeteer-stealth",
+    "cheerio",
+    "supabase"
+  ],
+  "author": "Arbitrip Data Engineering Team",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "got-scraping": "^4.0.7",
+    "node-cron": "^3.0.3",
+    "puppeteer": "^23.11.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/node-cron": "^3.0.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (Supabase compatible local instance)
+  postgres:
+    image: postgres:16-alpine
+    container_name: arbitrip-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: arbitrip_admin
+      POSTGRES_PASSWORD: arbitrip_secure_password_2026
+      POSTGRES_DB: arbitrip_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    networks:
+      - arbitrip-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arbitrip_admin -d arbitrip_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Express.js API Gateway
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: arbitrip-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DATABASE_URL: postgres://arbitrip_admin:arbitrip_secure_password_2026@postgres:5432/arbitrip_db
+      CORS_ORIGIN: http://localhost:3000
+      AMADEUS_CLIENT_ID: ${AMADEUS_CLIENT_ID:-}
+      AMADEUS_CLIENT_SECRET: ${AMADEUS_CLIENT_SECRET:-}
+      AMADEUS_HOSTNAME: test.api.amadeus.com
+      IMEI_FEE_TRY: 45614.00
+      TRT_BANDROL_PHONE_EUR: 20.00
+      TRT_BANDROL_MONITOR_EUR: 10.00
+    ports:
+      - "4000:4000"
+    networks:
+      - arbitrip-network
+
+  # Next.js 14 Frontend Dashboard
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: arbitrip-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+    ports:
+      - "3000:3000"
+    networks:
+      - arbitrip-network
+
+volumes:
+  pgdata:
+
+networks:
+  arbitrip-network:
+    driver: bridge
